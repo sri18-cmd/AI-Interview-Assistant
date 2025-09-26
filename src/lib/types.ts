@@ -16,6 +16,7 @@ export type Candidate = {
   name: string;
   email: string;
   phone: string;
+  resumeContent?: string;
 };
 
 export type InterviewSession = {
@@ -23,6 +24,7 @@ export type InterviewSession = {
   questionAnswers: QuestionAnswer[];
   score: number;
   summary: string;
+  introduction: string;
   date: string;
 };
 

@@ -11,6 +11,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const ScoreAndSummarizeCandidateInputSchema = z.object({
+  resumeContent: z.string().optional().describe('The text content of the candidate\'s resume.'),
   questionAnswers: z.array(
     z.object({
       question: z.string().describe('The interview question asked.'),
@@ -24,6 +25,7 @@ export type ScoreAndSummarizeCandidateInput = z.infer<typeof ScoreAndSummarizeCa
 const ScoreAndSummarizeCandidateOutputSchema = z.object({
   finalScore: z.number().describe('The final score of the candidate (0-100).'),
   summary: z.string().describe('A summary of the candidate\'s performance, strengths, and weaknesses.'),
+  introduction: z.string().describe('A brief, one-sentence introduction of the candidate based on their resume.'),
 });
 export type ScoreAndSummarizeCandidateOutput = z.infer<typeof ScoreAndSummarizeCandidateOutputSchema>;
 
@@ -37,7 +39,15 @@ const prompt = ai.definePrompt({
   output: {schema: ScoreAndSummarizeCandidateOutputSchema},
   prompt: `You are an AI assistant that reviews candidate answers to interview questions and provides a score and summary.
 
-  Analyze the following question-answer pairs from a candidate interview:
+  {{#if resumeContent}}
+  First, provide a brief, one-sentence introduction of the candidate based on their resume.
+  Resume:
+  {{{resumeContent}}}
+  {{else}}
+  Generate a one-sentence introduction stating the candidate did not provide a resume.
+  {{/if}}
+
+  Then, analyze the following question-answer pairs from a candidate interview:
 
   {{#each questionAnswers}}
   Question ({{this.difficulty}}): {{this.question}}

@@ -17,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import type { InterviewSession } from "@/lib/types";
 import { format } from "date-fns";
+import { FileText } from "lucide-react";
 
 type CandidateDetailsDialogProps = {
   session: InterviewSession;
@@ -45,6 +46,11 @@ export default function CandidateDetailsDialog({ session, open, onOpenChange }: 
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
+            <div>
+                <h3 className="font-semibold mb-2 flex items-center gap-2"><FileText className="h-4 w-4" /> AI Introduction</h3>
+                <p className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-md border italic">{session.introduction}</p>
+            </div>
+
             <div>
                 <h3 className="font-semibold mb-2">AI Summary</h3>
                 <p className="text-sm text-muted-foreground bg-secondary/50 p-3 rounded-md border">{session.summary}</p>

@@ -29,25 +29,42 @@ export default function InterviewQuestionCard({
   const answerRef = useRef(answer);
   answerRef.current = answer;
 
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     setTimeLeft(timeLimit);
     setAnswer('');
+
+    const handleTimeUp = () => {
+        onTimeUp(answerRef.current);
+    };
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
     
-    const timer = setInterval(() => {
+    timerRef.current = setInterval(() => {
       setTimeLeft((prevTime) => {
         if (prevTime <= 1) {
-          clearInterval(timer);
-          onTimeUp(answerRef.current);
+          clearInterval(timerRef.current!);
+          handleTimeUp();
           return 0;
         }
         return prevTime - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => {
+      if(timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    }
   }, [question, timeLimit, onTimeUp]);
 
   const handleSubmit = () => {
+    if (timerRef.current) {
+        clearInterval(timerRef.current);
+    }
     onTimeUp(answer);
   };
 
@@ -63,7 +80,7 @@ export default function InterviewQuestionCard({
   }
 
   return (
-    <Card className="w-full max-w-3xl shadow-2xl bg-white/80 backdrop-blur-sm">
+    <Card className="w-full max-w-3xl shadow-2xl bg-white/80 backdrop-blur-sm" data-question-card>
       <CardHeader>
         <div className="flex justify-between items-start">
             <div>

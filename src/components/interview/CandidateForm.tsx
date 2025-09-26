@@ -23,6 +23,7 @@ const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Please enter a valid email address." }),
   phone: z.string().min(10, { message: "Please enter a valid phone number." }),
+  resumeContent: z.string().optional(),
 });
 
 type CandidateFormProps = {
@@ -38,16 +39,28 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
       name: "",
       email: "",
       phone: "",
+      resumeContent: "",
     },
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    onStart({ ...values, id: values.email });
+    const { resumeContent, ...candidateData } = values;
+    onStart({ ...candidateData, id: values.email, resumeContent });
   };
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // For now, we only support .txt files for simplicity
+    if (file.type !== 'text/plain') {
+        toast({
+            title: "Unsupported File Type",
+            description: "Please upload a .txt file for resume parsing.",
+            variant: "destructive",
+        });
+        return;
+    }
 
     setIsParsing(true);
     toast({
@@ -55,39 +68,58 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
       description: "Please wait while we extract your information.",
     });
 
-    // For demo purposes, we'll just use a mock text.
-    // In a real app, you would use a library like pdf-parse to extract text.
-    const resumeContent = `
-      Jane Doe
-      jane.doe@example.com
-      555-123-4567
-      ---
-      Experience, skills, etc.
-    `;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        const resumeContent = event.target?.result as string;
+        if (!resumeContent) {
+            toast({
+                title: "Error Reading File",
+                description: "Could not read the resume file. Please try again.",
+                variant: "destructive",
+            });
+            setIsParsing(false);
+            return;
+        }
 
-    try {
-      const parsedData = await parseResume({ resumeContent });
-      form.reset({
-        name: parsedData.name,
-        email: parsedData.email,
-        phone: parsedData.phone,
-      });
-      toast({
-        title: "Resume Parsed Successfully!",
-        description: "Your information has been filled in.",
-      });
-    } catch (error) {
-      console.error("Failed to parse resume:", error);
-      toast({
-        title: "Error Parsing Resume",
-        description: "Could not extract information. Please fill the form manually.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsParsing(false);
-      // Reset file input
-      e.target.value = '';
+        form.setValue("resumeContent", resumeContent);
+
+        try {
+          const parsedData = await parseResume({ resumeContent });
+          form.reset({
+            name: parsedData.name,
+            email: parsedData.email,
+            phone: parsedData.phone,
+            resumeContent: resumeContent,
+          });
+          toast({
+            title: "Resume Parsed Successfully!",
+            description: "Your information has been filled in.",
+          });
+        } catch (error) {
+          console.error("Failed to parse resume:", error);
+          toast({
+            title: "Error Parsing Resume",
+            description: "Could not extract information. Please fill the form manually.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsParsing(false);
+        }
+    };
+
+    reader.onerror = () => {
+        toast({
+            title: "Error Reading File",
+            description: "Could not read the resume file. Please try again.",
+            variant: "destructive",
+        });
+        setIsParsing(false);
     }
+
+    reader.readAsText(file);
+    
+    // Reset file input
+    e.target.value = '';
   };
 
 
@@ -160,8 +192,8 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
                     ) : (
                         <FileUp className="mr-2 h-4 w-4" />
                     )}
-                    {isParsing ? 'Parsing...' : 'Upload Resume'}
-                    <input id="resume-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".pdf,.doc,.docx" disabled={isParsing} />
+                    {isParsing ? 'Parsing...' : 'Upload Resume (.txt only)'}
+                    <input id="resume-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".txt" disabled={isParsing} />
                 </label>
             </Button>
         </div>

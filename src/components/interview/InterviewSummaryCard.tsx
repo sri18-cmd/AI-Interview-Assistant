@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Home } from "lucide-react";
 import type { ScoreAndSummarizeCandidateOutput } from "@/ai/flows/score-and-summarize-candidate";
-import { Progress } from "@/components/ui/progress";
 
 export default function InterviewSummaryCard() {
   const router = useRouter();
@@ -23,6 +22,7 @@ export default function InterviewSummaryCard() {
         try {
           const scoreResult = await scoreAndSummarizeCandidate({
             questionAnswers: questions,
+            resumeContent: candidate.resumeContent,
           });
           setResult(scoreResult);
           
@@ -31,6 +31,7 @@ export default function InterviewSummaryCard() {
             questionAnswers: questions,
             score: scoreResult.finalScore,
             summary: scoreResult.summary,
+            introduction: scoreResult.introduction,
             date: new Date().toISOString(),
           };
           saveCompletedInterview(sessionData);
@@ -105,6 +106,11 @@ export default function InterviewSummaryCard() {
                 <p className="text-lg font-medium text-muted-foreground">Overall Score</p>
             </div>
             
+            <div>
+              <h3 className="text-lg font-semibold mb-2 font-headline">AI Introduction</h3>
+              <p className="text-muted-foreground bg-secondary/50 p-4 rounded-lg border italic">{result.introduction}</p>
+            </div>
+
             <div>
               <h3 className="text-lg font-semibold mb-2 font-headline">Performance Summary</h3>
               <p className="text-muted-foreground bg-secondary/50 p-4 rounded-lg border">{result.summary}</p>
