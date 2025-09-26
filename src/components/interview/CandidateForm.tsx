@@ -178,27 +178,19 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
             )}
           />
         </div>
-        <div className="space-y-4">
-            <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">Or</span>
-                </div>
-            </div>
-             <Button variant="outline" className="w-full" asChild disabled={isParsing}>
-                <label htmlFor="resume-upload" className="cursor-pointer">
-                    {isParsing ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <FileUp className="mr-2 h-4 w-4" />
-                    )}
-                    {isParsing ? 'Processing...' : 'Upload Resume (.txt, .pdf, .docx)'}
-                    <input id="resume-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".txt,.pdf,.docx" disabled={isParsing} />
-                </label>
-            </Button>
-        </div>
+        
+        <Button variant="outline" className="w-full" asChild disabled={isParsing}>
+            <label htmlFor="resume-upload" className="cursor-pointer">
+                {isParsing ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                    <FileUp className="mr-2 h-4 w-4" />
+                )}
+                {isParsing ? 'Processing...' : 'Upload Resume (.txt)'}
+                <input id="resume-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".txt" disabled={isParsing} />
+            </label>
+        </Button>
+        
         <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={isParsing}>
           <Send className="mr-2 h-4 w-4" />
           Start Interview
