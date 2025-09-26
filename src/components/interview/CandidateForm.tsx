@@ -60,20 +60,15 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // For now, we only support .txt files for simplicity
-    if (file.type !== 'text/plain') {
-        toast({
-            title: "Unsupported File Type",
-            description: "Please upload a .txt file for resume parsing.",
-            variant: "destructive",
-        });
-        return;
-    }
+    // We can't properly parse docx/pdf on the client easily,
+    // so for now we'll stick to .txt for parsing, but allow upload.
+    // The content will be stored for the summary.
+    const isTxtFile = file.type === 'text/plain';
 
     setIsParsing(true);
     toast({
-      title: "Parsing Resume...",
-      description: "Please wait while we extract your information.",
+      title: "Reading Resume...",
+      description: "Please wait while we process your file.",
     });
 
     const reader = new FileReader();
@@ -91,27 +86,39 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
 
         form.setValue("resumeContent", resumeContent);
 
-        try {
-          const parsedData = await parseResume({ resumeContent });
-          form.reset({
-            name: parsedData.name,
-            email: parsedData.email,
-            phone: parsedData.phone,
-            resumeContent: resumeContent,
-          });
-          toast({
-            title: "Resume Parsed Successfully!",
-            description: "Your information has been filled in.",
-          });
-        } catch (error) {
-          console.error("Failed to parse resume:", error);
-          toast({
-            title: "Error Parsing Resume",
-            description: "Could not extract information. Please fill the form manually.",
-            variant: "destructive",
-          });
-        } finally {
-          setIsParsing(false);
+        if (isTxtFile) {
+            toast({
+                title: "Parsing Resume...",
+                description: "Extracting your information from the .txt file.",
+            });
+            try {
+              const parsedData = await parseResume({ resumeContent });
+              form.reset({
+                name: parsedData.name,
+                email: parsedData.email,
+                phone: parsedData.phone,
+                resumeContent: resumeContent,
+              });
+              toast({
+                title: "Resume Parsed Successfully!",
+                description: "Your information has been filled in.",
+              });
+            } catch (error) {
+              console.error("Failed to parse resume:", error);
+              toast({
+                title: "Error Parsing Resume",
+                description: "Could not extract information. Please fill the form manually.",
+                variant: "destructive",
+              });
+            } finally {
+              setIsParsing(false);
+            }
+        } else {
+            toast({
+                title: "File Uploaded",
+                description: "Your resume has been attached. Please fill out your details manually.",
+            });
+            setIsParsing(false);
         }
     };
 
@@ -144,7 +151,7 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <FormControl>
-                    <Input placeholder="e.g. Jane Doe" {...field} className="pl-9" />
+                    <Input placeholder="Your Name" {...field} className="pl-9" />
                   </FormControl>
                 </div>
                 <FormMessage />
@@ -160,7 +167,7 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
                  <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <FormControl>
-                    <Input placeholder="e.g. you@example.com" {...field} className="pl-9" />
+                    <Input placeholder="you@example.com" {...field} className="pl-9" />
                   </FormControl>
                 </div>
                 <FormMessage />
@@ -176,7 +183,7 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
                  <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <FormControl>
-                    <Input placeholder="e.g. 555-123-4567" {...field} className="pl-9" />
+                    <Input placeholder="(123) 456-7890" {...field} className="pl-9" />
                   </FormControl>
                 </div>
                 <FormMessage />
@@ -200,8 +207,8 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
                     ) : (
                         <FileUp className="mr-2 h-4 w-4" />
                     )}
-                    {isParsing ? 'Parsing...' : 'Upload Resume (.txt only)'}
-                    <input id="resume-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".txt" disabled={isParsing} />
+                    {isParsing ? 'Processing...' : 'Upload Resume (.txt, .pdf, .docx)'}
+                    <input id="resume-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".txt,.pdf,.docx" disabled={isParsing} />
                 </label>
             </Button>
         </div>
