@@ -30,13 +30,19 @@ export default function InterviewQuestionCard({
   answerRef.current = answer;
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const onTimeUpRef = useRef(onTimeUp);
+  onTimeUpRef.current = onTimeUp;
 
   useEffect(() => {
     setTimeLeft(timeLimit);
     setAnswer('');
 
     const handleTimeUp = () => {
-        onTimeUp(answerRef.current);
+      // Running this in the next animation frame prevents React errors
+      // about updating state during a render.
+      requestAnimationFrame(() => {
+        onTimeUpRef.current(answerRef.current);
+      });
     };
 
     if (timerRef.current) {
@@ -59,7 +65,7 @@ export default function InterviewQuestionCard({
         clearInterval(timerRef.current);
       }
     }
-  }, [question, timeLimit, onTimeUp]);
+  }, [question, timeLimit]);
 
   const handleSubmit = () => {
     if (timerRef.current) {

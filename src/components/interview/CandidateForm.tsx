@@ -44,6 +44,14 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    if (!values.resumeContent) {
+      toast({
+        title: "Resume Required",
+        description: "Please upload a resume to start the interview.",
+        variant: "destructive",
+      });
+      return;
+    }
     const { resumeContent, ...candidateData } = values;
     onStart({ ...candidateData, id: values.email, resumeContent });
   };

@@ -37,9 +37,13 @@ const prompt = ai.definePrompt({
   name: 'generateInterviewQuestionsPrompt',
   input: {schema: GenerateInterviewQuestionsInputSchema},
   output: {schema: GenerateInterviewQuestionsOutputSchema},
-  prompt: `You are an AI assistant designed to generate interview questions for full-stack developer roles.
+  prompt: `You are an AI assistant designed to generate interview questions for full-stack developer roles (React/Node).
 
   Generate a question of {{{difficulty}}} difficulty.
+  - Easy: Should be a simple, short-answer question to check for basic knowledge.
+  - Medium: Should be a moderate question that requires some explanation or a simple code example.
+  - Hard: Should be a complex question that requires a detailed explanation, a code example, or a discussion of trade-offs.
+
   The question should evaluate the candidate's knowledge of React, Node.js, and general web development principles.
   Focus on practical knowledge and problem-solving skills.
 
