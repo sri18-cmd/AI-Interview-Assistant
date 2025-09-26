@@ -60,11 +60,6 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // We can't properly parse docx/pdf on the client easily,
-    // so for now we'll stick to .txt for parsing, but allow upload.
-    // The content will be stored for the summary.
-    const isTxtFile = file.type === 'text/plain';
-
     setIsParsing(true);
     toast({
       title: "Reading Resume...",
@@ -86,39 +81,31 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
 
         form.setValue("resumeContent", resumeContent);
 
-        if (isTxtFile) {
-            toast({
-                title: "Parsing Resume...",
-                description: "Extracting your information from the .txt file.",
-            });
-            try {
-              const parsedData = await parseResume({ resumeContent });
-              form.reset({
-                name: parsedData.name,
-                email: parsedData.email,
-                phone: parsedData.phone,
-                resumeContent: resumeContent,
-              });
-              toast({
-                title: "Resume Parsed Successfully!",
-                description: "Your information has been filled in.",
-              });
-            } catch (error) {
-              console.error("Failed to parse resume:", error);
-              toast({
-                title: "Error Parsing Resume",
-                description: "Could not extract information. Please fill the form manually.",
-                variant: "destructive",
-              });
-            } finally {
-              setIsParsing(false);
-            }
-        } else {
-            toast({
-                title: "File Uploaded",
-                description: "Your resume has been attached. Please fill out your details manually.",
-            });
-            setIsParsing(false);
+        toast({
+            title: "Parsing Resume...",
+            description: "Extracting your information from the file.",
+        });
+        try {
+          const parsedData = await parseResume({ resumeContent });
+          form.reset({
+            name: parsedData.name,
+            email: parsedData.email,
+            phone: parsedData.phone,
+            resumeContent: resumeContent,
+          });
+          toast({
+            title: "Resume Parsed Successfully!",
+            description: "Your information has been filled in.",
+          });
+        } catch (error) {
+          console.error("Failed to parse resume:", error);
+          toast({
+            title: "Error Parsing Resume",
+            description: "Could not extract information. Please fill the form manually.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsParsing(false);
         }
     };
 
