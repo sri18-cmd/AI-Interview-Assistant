@@ -15,8 +15,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import type { Candidate } from "@/lib/types";
-import { FileUp, Mail, Phone, User, Send } from "lucide-react";
-import { ChangeEvent } from "react";
+import { FileUp, Mail, Phone, User, Send, Loader2 } from "lucide-react";
+import { ChangeEvent, useState } from "react";
+import { parseResume } from "@/lib/actions";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -30,6 +31,7 @@ type CandidateFormProps = {
 
 export function CandidateForm({ onStart }: CandidateFormProps) {
   const { toast } = useToast();
+  const [isParsing, setIsParsing] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,20 +45,51 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
     onStart({ ...values, id: values.email });
   };
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      toast({
-        title: "Resume Uploaded (Demo)",
-        description: "For demo purposes, the form has been filled with sample data.",
-      });
-      // Simulate parsing the resume
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsParsing(true);
+    toast({
+      title: "Parsing Resume...",
+      description: "Please wait while we extract your information.",
+    });
+
+    // For demo purposes, we'll just use a mock text.
+    // In a real app, you would use a library like pdf-parse to extract text.
+    const resumeContent = `
+      Jane Doe
+      jane.doe@example.com
+      555-123-4567
+      ---
+      Experience, skills, etc.
+    `;
+
+    try {
+      const parsedData = await parseResume({ resumeContent });
       form.reset({
-        name: "Jane Doe",
-        email: "jane.doe@example.com",
-        phone: "555-123-4567",
+        name: parsedData.name,
+        email: parsedData.email,
+        phone: parsedData.phone,
       });
+      toast({
+        title: "Resume Parsed Successfully!",
+        description: "Your information has been filled in.",
+      });
+    } catch (error) {
+      console.error("Failed to parse resume:", error);
+      toast({
+        title: "Error Parsing Resume",
+        description: "Could not extract information. Please fill the form manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsParsing(false);
+      // Reset file input
+      e.target.value = '';
     }
   };
+
 
   return (
     <Form {...form}>
@@ -120,15 +153,19 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
                     <span className="bg-card px-2 text-muted-foreground">Or</span>
                 </div>
             </div>
-             <Button variant="outline" className="w-full" asChild>
+             <Button variant="outline" className="w-full" asChild disabled={isParsing}>
                 <label htmlFor="resume-upload" className="cursor-pointer">
-                    <FileUp className="mr-2 h-4 w-4" />
-                    Upload Resume
-                    <input id="resume-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".pdf,.doc,.docx" />
+                    {isParsing ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <FileUp className="mr-2 h-4 w-4" />
+                    )}
+                    {isParsing ? 'Parsing...' : 'Upload Resume'}
+                    <input id="resume-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".pdf,.doc,.docx" disabled={isParsing} />
                 </label>
             </Button>
         </div>
-        <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+        <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={isParsing}>
           <Send className="mr-2 h-4 w-4" />
           Start Interview
         </Button>
