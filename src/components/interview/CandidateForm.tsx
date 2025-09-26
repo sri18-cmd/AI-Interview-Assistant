@@ -68,8 +68,8 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
 
     const reader = new FileReader();
     reader.onload = async (event) => {
-        const resumeContent = event.target?.result as string;
-        if (!resumeContent) {
+        const fileContent = event.target?.result as string;
+        if (!fileContent) {
             toast({
                 title: "Error Reading File",
                 description: "Could not read the resume file. Please try again.",
@@ -79,19 +79,20 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
             return;
         }
 
-        form.setValue("resumeContent", resumeContent);
+        form.setValue("resumeContent", fileContent);
 
         toast({
             title: "Parsing Resume...",
             description: "Extracting your information from the file.",
         });
         try {
-          const parsedData = await parseResume({ resumeContent });
+          // The fileContent is a data URI (e.g., "data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==")
+          const parsedData = await parseResume({ resumeContent: fileContent });
           form.reset({
             name: parsedData.name,
             email: parsedData.email,
             phone: parsedData.phone,
-            resumeContent: resumeContent,
+            resumeContent: fileContent,
           });
           toast({
             title: "Resume Parsed Successfully!",
@@ -118,7 +119,7 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
         setIsParsing(false);
     }
 
-    reader.readAsText(file);
+    reader.readAsDataURL(file);
     
     // Reset file input
     e.target.value = '';
@@ -186,8 +187,8 @@ export function CandidateForm({ onStart }: CandidateFormProps) {
                 ) : (
                     <FileUp className="mr-2 h-4 w-4" />
                 )}
-                {isParsing ? 'Processing...' : 'Upload Resume (.txt)'}
-                <input id="resume-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".txt" disabled={isParsing} />
+                {isParsing ? 'Processing...' : 'Upload Resume (.txt, .pdf, .docx)'}
+                <input id="resume-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".txt,.pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" disabled={isParsing} />
             </label>
         </Button>
         

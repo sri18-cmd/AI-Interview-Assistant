@@ -14,7 +14,9 @@ import {z} from 'genkit';
 const ParseResumeInputSchema = z.object({
   resumeContent: z
     .string()
-    .describe('The text content of a candidate\'s resume.'),
+    .describe(
+      "A candidate's resume, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
 });
 export type ParseResumeInput = z.infer<typeof ParseResumeInputSchema>;
 
@@ -37,9 +39,9 @@ const prompt = ai.definePrompt({
   output: {schema: ParseResumeOutputSchema},
   prompt: `You are an AI assistant designed to parse resumes.
 
-  Extract the candidate's full name, email address, and phone number from the following resume content:
+  Extract the candidate's full name, email address, and phone number from the following resume:
 
-  {{{resumeContent}}}
+  {{media url=resumeContent}}
 
   Provide the extracted information in the specified format.`,
 });
