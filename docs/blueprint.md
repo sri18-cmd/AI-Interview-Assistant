@@ -1,5 +1,5 @@
 # **App Name**: AI Interview Assistant
-
+#intial idea , but all details are there in read me file , once check read me file for clarification
 ## Core Features:
 
 - Resume Parsing: Upload a resume (PDF or DOCX), extract Name, Email, and Phone number.
