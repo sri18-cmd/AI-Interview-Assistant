@@ -14,7 +14,7 @@ import {z} from 'genkit';
 
 const GenerateInterviewQuestionsInputSchema = z.object({
   difficulty: z
-    .enum(['Easy', 'Medium', 'Hard'])
+    .enum(['Hard', 'Medium', 'Easy'])
     .describe('The difficulty level of the interview question.'),
 });
 export type GenerateInterviewQuestionsInput = z.infer<
