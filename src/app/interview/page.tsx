@@ -11,9 +11,9 @@ import type { Question, QuestionAnswer } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 const INTERVIEW_QUESTIONS_CONFIG = [
-  { difficulty: 'Easy', count: 2, time: 20 },
+  { difficulty: 'Easy', count: 2, time: 5 },
   { difficulty: 'Medium', count: 2, time: 60 },
-  { difficulty: 'Hard', count: 2, time: 120 },
+  { difficulty: 'Hard', count: 2, time: 300 },
 ] as const;
 
 export default function InterviewPage() {
